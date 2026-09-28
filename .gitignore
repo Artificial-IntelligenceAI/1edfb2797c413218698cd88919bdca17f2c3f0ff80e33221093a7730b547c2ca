@@ -1,1 +1,10 @@
 .DS_Store
+.gradle/
+.kotlin/
+build/
+local.properties
+.idea/
+*.iml
+captures/
+# Nothing's Glyph SDK has no license file, so it is downloaded at build time instead of committed.
+app/libs/*.aar
