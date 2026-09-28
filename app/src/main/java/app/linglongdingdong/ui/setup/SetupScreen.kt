@@ -279,7 +279,7 @@ private fun CallerEditor(draft: Caller, onPickPhoto: () -> Unit) {
         Spacer(Modifier.width(16.dp))
         Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
             NothingField(draft.name, { v -> editDraft { it.copy(name = v) } }, "Name")
-            NothingField(draft.number, { v -> editDraft { it.copy(number = v) } }, "Number", keyboardType = KeyboardType.Phone)
+            NothingField(draft.number, { v -> editDraft { it.copy(number = v) } }, "Number or any text")
         }
     }
     Spacer(Modifier.height(12.dp))
