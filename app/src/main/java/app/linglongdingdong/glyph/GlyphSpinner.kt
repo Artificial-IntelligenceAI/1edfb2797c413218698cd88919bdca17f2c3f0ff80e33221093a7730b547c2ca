@@ -74,7 +74,7 @@ class GlyphSpinner(context: Context) {
         val frame = IntArray(LED_COUNT)
         val start = SystemClock.elapsedRealtime()
         var last = start
-        var head = 0.0 // position along LOOP, in LEDs
+        var head = 0.0 // degrees clockwise around the camera ring
         while (isActive) {
             val now = SystemClock.elapsedRealtime()
             val t = (now - start).toDouble()
@@ -82,14 +82,13 @@ class GlyphSpinner(context: Context) {
             val progress = t / SPIN_MS
             // Exponential speed-up feels like a steady acceleration to the eye.
             val lapsPerSecond = START_LAPS_PER_S * (END_LAPS_PER_S / START_LAPS_PER_S).pow(progress)
-            head += lapsPerSecond * LED_COUNT * (now - last) / 1000.0
+            head = (head + lapsPerSecond * 360 * (now - last) / 1000.0) % 360
             last = now
             // The tail grows with speed so the fast end blurs into a ring.
-            val tail = 3.0 + progress.pow(2) * (LED_COUNT - 6)
-            frame.fill(0)
+            val tail = 50 + progress.pow(2) * 300
             for (i in 0 until LED_COUNT) {
-                val behind = ((head - i) % LED_COUNT + LED_COUNT) % LED_COUNT
-                if (behind < tail) frame[LOOP[i]] = (MAX * (1 - behind / tail).pow(1.6)).toInt()
+                val behind = ((head - ANGLES[i]) % 360 + 360) % 360
+                frame[i] = if (behind < tail) (MAX * (1 - behind / tail).pow(1.6)).toInt() else 0
             }
             send(frame)
             delay(FRAME_MS)
@@ -122,10 +121,19 @@ class GlyphSpinner(context: Context) {
         private const val LED_COUNT = 36
 
         /**
-         * Spin order. SDK indices: C1–C20 = 0–19, A1–A11 = 20–30, B1–B5 = 31–35.
-         * C runs bottom-left → top-right, A top → bottom, B bottom-right → top-left.
+         * Where each LED sits around the camera ring, in degrees clockwise from 12 o'clock, seen
+         * from the back. SDK indices: C1–C20 = 0–19, A1–A11 = 20–30, B1–B5 = 31–35.
+         * C runs 9 → 11 o'clock, A 3 → 4 o'clock, B 7 → 8 o'clock. Spinning by angle keeps the
+         * speed even across the gaps between strips.
          */
-        private val LOOP = IntArray(LED_COUNT) { it }
+        private val ANGLES = DoubleArray(LED_COUNT) { i ->
+            fun along(from: Double, to: Double, index: Int, count: Int) = from + (to - from) * index / (count - 1)
+            when {
+                i < 20 -> along(281.0, 329.0, i, 20)
+                i < 31 -> along(81.0, 117.0, i - 20, 11)
+                else -> along(215.0, 236.0, i - 31, 5)
+            }
+        }
 
         val supported: Boolean get() = runCatching { Common.is24111() }.getOrDefault(false)
     }

@@ -164,6 +164,9 @@ private fun SetupScreen(onPickPhoto: () -> Unit) {
             Spacer(Modifier.height(120.dp))
         }
 
+        // Keeps scrolled content from running under the status bar icons.
+        Box(Modifier.fillMaxWidth().background(Nothing.Black).statusBarsPadding())
+
         val busy = phase is CallPhase.Ringing || phase is CallPhase.Active
         NothingButton(
             text = if (data.delaySeconds == 0) "CALL NOW" else "CALL IN ${formatDelay(data.delaySeconds)}",
