@@ -12,6 +12,7 @@ Schedule a call from anyone you like. It rings like a real call: a Pixel / Googl
 - **Glyph lights** (Phone (3a) / (3a) Pro): a light spins around the Glyph strips like a loading icon, speeding up over 20 seconds, then stays solid
 - **Call screen:** swipe up to answer or down to decline, with a Pixel-style in-call screen (timer, keypad with DTMF tones, mute, speaker, hold)
 - **Voice:** when you answer, the caller says your text (text-to-speech) or plays a clip you recorded, through the earpiece. Speaker switches it to loudspeaker.
+- **Hang-up sound:** hanging up plays your phone's own call-ended sound (Android Telecom's `endcall` tone), loaded from the system rather than bundled
 - **Missed calls:** an unanswered call rings for 2 minutes, then leaves a missed-call notification
 - **Saved callers:** keep presets like "Mom" or "Boss"
 

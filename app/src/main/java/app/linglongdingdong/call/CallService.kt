@@ -27,6 +27,7 @@ class CallService : Service() {
     private var voice: VoicePlayer? = null
     private var timeout: Job? = null
     private var wakeLock: PowerManager.WakeLock? = null
+    private var hangingUp = false
 
     override fun onBind(intent: Intent?): IBinder? = null
 
@@ -41,7 +42,9 @@ class CallService : Service() {
                 voice?.route(on)
             }
         }
-        if (CallState.phase.value !is CallPhase.Ringing && CallState.phase.value !is CallPhase.Active) stopSelf()
+        if (CallState.phase.value !is CallPhase.Ringing && CallState.phase.value !is CallPhase.Active && !hangingUp) {
+            stopSelf()
+        }
         return START_NOT_STICKY
     }
 
@@ -97,12 +100,21 @@ class CallService : Service() {
             else -> return
         }
         stopRinging()
-        voice?.release()
-        voice = null
         CallState._phase.value = CallPhase.Ended(caller, wasAnswered = phase is CallPhase.Active)
         if (missed) Notifications.postMissed(this, caller)
         stopForeground(STOP_FOREGROUND_REMOVE)
-        stopSelf()
+        val player = voice
+        voice = null
+        if (player != null) {
+            // Stay alive until the hang-up sound has played.
+            hangingUp = true
+            player.hangUp {
+                hangingUp = false
+                stopSelf()
+            }
+        } else {
+            stopSelf()
+        }
     }
 
     private fun stopRinging() {
@@ -121,6 +133,7 @@ class CallService : Service() {
 
     override fun onDestroy() {
         end(missed = false)
+        voice?.release()
         scope.cancel()
         super.onDestroy()
     }
